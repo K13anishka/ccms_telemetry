@@ -6,11 +6,13 @@
 
 static const char *TAG = "GPS_PARSER";
 static int s_uart_num = 1;
+
+// Strictly zeroed out until real hardware GPS fix is received
 static gps_data_t s_last_gps = {
-    .latitude = 12.9716,
-    .longitude = 77.5946,
-    .fix_valid = true,
-    .satellites = 8,
+    .latitude = 0.0,
+    .longitude = 0.0,
+    .fix_valid = false,
+    .satellites = 0,
 };
 
 // Convert NMEA DDMM.MMMM to decimal degrees
@@ -60,7 +62,6 @@ void gps_parser_read(gps_data_t *out_data)
         while (line) {
             // Check for $GPRMC or $GNRMC
             if (strstr(line, "$GPRMC") || strstr(line, "$GNRMC")) {
-                // $GPRMC,hhmmss,status,lat,NS,lon,EW,...
                 char *token = strtok(line, ",");
                 int field = 0;
                 char status = 'V';
@@ -79,11 +80,11 @@ void gps_parser_read(gps_data_t *out_data)
                     field++;
                 }
 
-                if (status == 'A') {
+                if (status == 'A') { // 'A' = Valid active GPS fix from satellite
                     s_last_gps.latitude = nmea_to_decimal(raw_lat, ns);
                     s_last_gps.longitude = nmea_to_decimal(raw_lon, ew);
                     s_last_gps.fix_valid = true;
-                    ESP_LOGI(TAG, "Valid GPS Fix: %.5f, %.5f", s_last_gps.latitude, s_last_gps.longitude);
+                    ESP_LOGI(TAG, "Hardware GPS Fix: Lat %.5f, Lon %.5f", s_last_gps.latitude, s_last_gps.longitude);
                 }
             }
             line = strtok(NULL, "\r\n");

@@ -21,20 +21,43 @@ esp_err_t telemetry_client_send(const char *url,
     char json_body[512];
     time_t now = time(NULL);
 
+    char v_buf[16] = "null";
+    char i_buf[16] = "null";
+    char p_buf[16] = "null";
+    char kwh_buf[16] = "null";
+    char pf_buf[16] = "null";
+    char freq_buf[16] = "null";
+
+    if (meter && meter->valid) {
+        snprintf(v_buf, sizeof(v_buf), "%.2f", meter->voltage);
+        snprintf(i_buf, sizeof(i_buf), "%.3f", meter->current);
+        snprintf(p_buf, sizeof(p_buf), "%.1f", meter->active_power);
+        snprintf(kwh_buf, sizeof(kwh_buf), "%.3f", meter->energy_kwh);
+        snprintf(pf_buf, sizeof(pf_buf), "%.2f", meter->power_factor);
+        snprintf(freq_buf, sizeof(freq_buf), "%.1f", meter->frequency);
+    }
+
+    char lat_buf[20] = "null";
+    char lon_buf[20] = "null";
+    if (gps && gps->fix_valid) {
+        snprintf(lat_buf, sizeof(lat_buf), "%.6f", gps->latitude);
+        snprintf(lon_buf, sizeof(lon_buf), "%.6f", gps->longitude);
+    }
+
     snprintf(json_body, sizeof(json_body),
         "{"
         "\"kit_id\":\"%s\","
         "\"imei\":\"%s\","
         "\"device_id\":\"%s\","
         "\"router_name\":\"%s\","
-        "\"voltage\":%.2f,"
-        "\"current\":%.3f,"
-        "\"power\":%.1f,"
-        "\"energy\":%.3f,"
-        "\"pf\":%.2f,"
-        "\"freq\":%.1f,"
-        "\"lat\":%.6f,"
-        "\"lon\":%.6f,"
+        "\"voltage\":%s,"
+        "\"current\":%s,"
+        "\"power\":%s,"
+        "\"energy\":%s,"
+        "\"pf\":%s,"
+        "\"freq\":%s,"
+        "\"lat\":%s,"
+        "\"lon\":%s,"
         "\"relay\":%d,"
         "\"timestamp\":%ld"
         "}",
@@ -42,19 +65,19 @@ esp_err_t telemetry_client_send(const char *url,
         imei,
         imei,
         router_name ? router_name : "",
-        meter ? meter->voltage : 230.0f,
-        meter ? meter->current : 0.0f,
-        meter ? meter->active_power : 0.0f,
-        meter ? meter->energy_kwh : 0.0f,
-        meter ? meter->power_factor : 1.0f,
-        meter ? meter->frequency : 50.0f,
-        gps ? gps->latitude : 0.0,
-        gps ? gps->longitude : 0.0,
+        v_buf,
+        i_buf,
+        p_buf,
+        kwh_buf,
+        pf_buf,
+        freq_buf,
+        lat_buf,
+        lon_buf,
         relay_state,
         (long)now
     );
 
-    ESP_LOGI(TAG, "Sending Telemetry to %s -> %s", url, json_body);
+    ESP_LOGI(TAG, "Transmitting Telemetry -> %s", json_body);
 
     esp_http_client_config_t config = {
         .url = url,

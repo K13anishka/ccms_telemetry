@@ -25,7 +25,7 @@ static void set_relay(int state)
 
 static void telemetry_task(void *pvParameters)
 {
-    ESP_LOGI(TAG, "Telemetry task started. Target Kit: '%s' | IMEI: '%s' | Router: '%s'",
+    ESP_LOGI(TAG, "Telemetry task started for Kit: '%s' | IMEI: '%s' | Router: '%s'",
              KIT_ID, IMEI, ROUTER_NAME);
 
     // Wait until Wi-Fi is connected
@@ -33,23 +33,23 @@ static void telemetry_task(void *pvParameters)
 
     while (1) {
         if (wifi_manager_is_connected()) {
-            // 1. Read Modbus Energy Meter
+            // 1. Read Modbus Energy Meter from real hardware
             meter_reading_t meter = { 0 };
-            modbus_meter_read(&meter);
+            esp_err_t meter_err = modbus_meter_read(&meter);
 
-            // 2. Read GPS
+            // 2. Read GPS from real hardware
             gps_data_t gps = { 0 };
             gps_parser_read(&gps);
 
-            // 3. Send Telemetry to AWS Backend
+            // 3. Send Telemetry to AWS Backend (only with real values)
             telemetry_client_send(
                 AWS_SERVER_URL,
                 API_KEY,
                 KIT_ID,
                 IMEI,
                 ROUTER_NAME,
-                &meter,
-                &gps,
+                (meter_err == ESP_OK && meter.valid) ? &meter : NULL,
+                gps.fix_valid ? &gps : NULL,
                 s_relay_state
             );
 
@@ -61,7 +61,7 @@ static void telemetry_task(void *pvParameters)
                 }
             }
         } else {
-            ESP_LOGW(TAG, "Wi-Fi not connected yet. Waiting...");
+            ESP_LOGW(TAG, "Wi-Fi disconnected. Reconnecting...");
         }
 
         vTaskDelay(pdMS_TO_TICKS(TELEMETRY_INTERVAL_SEC * 1000));
