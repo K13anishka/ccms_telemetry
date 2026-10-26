@@ -145,7 +145,7 @@ export default function App() {
           <main className="page-container">
             <Routes>
               <Route path="/" element={<Dashboard onToast={showToast} />} />
-              <Route path="/devices" element={<Devices onToast={showToast} />} />
+              <Route path="/devices" element={<Devices onToast={showToast} isAdmin={role === 'admin'} />} />
               <Route path="/device/:id" element={<DeviceDetail onToast={showToast} />} />
               <Route path="/locations" element={<Locations onToast={showToast} />} />
               <Route path="/events" element={<Events onToast={showToast} />} />

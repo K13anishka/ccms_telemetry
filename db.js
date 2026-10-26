@@ -89,6 +89,8 @@ async function initDb() {
       await client.query(`ALTER TABLE devices ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION`);
       await client.query(`ALTER TABLE devices ADD COLUMN IF NOT EXISTS location_source TEXT`);
       await client.query(`ALTER TABLE devices ADD COLUMN IF NOT EXISTS location_updated_at TIMESTAMPTZ`);
+      // Wi-Fi router the controller is installed behind (a label / SSID, never the password)
+      await client.query(`ALTER TABLE devices ADD COLUMN IF NOT EXISTS router_id TEXT`);
       // Dashboard users (admin login / sign-up)
       await client.query(`
         CREATE TABLE IF NOT EXISTS users (
@@ -159,6 +161,7 @@ async function initDb() {
       "longitude REAL",
       "location_source TEXT",
       "location_updated_at TEXT",
+      "router_id TEXT",
     ]) {
       try {
         sqliteDb.exec(`ALTER TABLE devices ADD COLUMN ${col}`);
@@ -403,7 +406,10 @@ async function getStats() {
         ) sub
       `),
       pgPool.query(`
-        SELECT COALESCE(SUM((r.data->>'kwh')::numeric), 0)::float AS total_kwh
+        SELECT COALESCE(SUM(
+                 CASE WHEN (r.data->>'kwh') ~ '^-?[0-9]+(\\.[0-9]+)?$'
+                      THEN (r.data->>'kwh')::numeric ELSE 0 END
+               ), 0)::float AS total_kwh
         FROM devices d
         LEFT JOIN LATERAL (
           SELECT data FROM readings WHERE device_id = d.device_id ORDER BY id DESC LIMIT 1
@@ -446,7 +452,7 @@ async function getStats() {
 async function getAllDevices() {
   if (isPostgres) {
     const { rows } = await pgPool.query(`
-      SELECT d.device_id, d.name, d.created_at, d.latitude, d.longitude, d.location_source,
+      SELECT d.device_id, d.name, d.router_id, d.created_at, d.latitude, d.longitude, d.location_source,
              r.received_at AS last_seen, r.data
       FROM devices d
       LEFT JOIN LATERAL (
@@ -461,6 +467,7 @@ async function getAllDevices() {
     return rows.map((r) => ({
       device_id: r.device_id,
       name: r.name,
+      router_id: r.router_id || null,
       created_at: r.created_at,
       last_seen: r.last_seen || null,
       online: r.last_seen
@@ -472,7 +479,7 @@ async function getAllDevices() {
   } else {
     const rows = sqliteDb
       .prepare(`
-        SELECT d.device_id, d.name, d.created_at, d.latitude, d.longitude, d.location_source,
+        SELECT d.device_id, d.name, d.router_id, d.created_at, d.latitude, d.longitude, d.location_source,
                r.received_at AS last_seen, r.data
         FROM devices d
         LEFT JOIN readings r ON r.id = (
@@ -486,6 +493,7 @@ async function getAllDevices() {
       return {
         device_id: r.device_id,
         name: r.name,
+        router_id: r.router_id || null,
         created_at: r.created_at,
         last_seen: r.last_seen || null,
         online: r.last_seen
@@ -498,32 +506,54 @@ async function getAllDevices() {
   }
 }
 
-async function addDevice(deviceId, name, apiKey) {
+async function addDevice(deviceId, name, apiKey, routerId) {
   if (isPostgres) {
     const { rows } = await pgPool.query(
-      `INSERT INTO devices (device_id, name, api_key)
-       VALUES ($1, $2, $3)
-       RETURNING device_id, name, created_at`,
-      [String(deviceId), name || null, String(apiKey)]
+      `INSERT INTO devices (device_id, name, api_key, router_id)
+       VALUES ($1, $2, $3, $4)
+       RETURNING device_id, name, router_id, created_at`,
+      [String(deviceId), name || null, String(apiKey), routerId || null]
     );
     return rows[0];
   } else {
     sqliteDb
       .prepare(
-        `INSERT INTO devices (device_id, name, api_key) VALUES (?, ?, ?)`
+        `INSERT INTO devices (device_id, name, api_key, router_id) VALUES (?, ?, ?, ?)`
       )
-      .run(String(deviceId), name || null, String(apiKey));
-    return { device_id: deviceId, name, created_at: new Date().toISOString() };
+      .run(String(deviceId), name || null, String(apiKey), routerId || null);
+    return {
+      device_id: String(deviceId),
+      name: name || null,
+      router_id: routerId || null,
+      created_at: new Date().toISOString(),
+    };
   }
 }
 
+/** Admin-only: the credentials that get flashed into this controller. */
+async function getDeviceCredentials(deviceId) {
+  if (isPostgres) {
+    const { rows } = await pgPool.query(
+      "SELECT device_id, name, router_id, api_key FROM devices WHERE device_id = $1",
+      [String(deviceId)]
+    );
+    return rows[0] || null;
+  }
+  return (
+    sqliteDb
+      .prepare("SELECT device_id, name, router_id, api_key FROM devices WHERE device_id = ?")
+      .get(String(deviceId)) || null
+  );
+}
+
 async function updateDevice(deviceId, fields) {
-  const { name, api_key } = fields;
+  const { name, api_key, router_id } = fields;
   const hasLoc = fields.latitude !== undefined || fields.longitude !== undefined;
   const sets = [];
   const vals = [];
   if (name !== undefined) { sets.push("name"); vals.push(name); }
   if (api_key !== undefined) { sets.push("api_key"); vals.push(String(api_key)); }
+  if (router_id !== undefined) { sets.push("router_id"); vals.push(router_id ? String(router_id) : null); }
   if (hasLoc) {
     const clear = fields.latitude === null || fields.longitude === null;
     sets.push("latitude"); vals.push(clear ? null : Number(fields.latitude));
@@ -537,7 +567,7 @@ async function updateDevice(deviceId, fields) {
     vals.push(String(deviceId));
     const { rows } = await pgPool.query(
       `UPDATE devices SET ${assign} WHERE device_id = $${vals.length}
-       RETURNING device_id, name, created_at, latitude, longitude, location_source`,
+       RETURNING device_id, name, router_id, created_at, latitude, longitude, location_source`,
       vals
     );
     return rows[0];
@@ -546,7 +576,7 @@ async function updateDevice(deviceId, fields) {
     vals.push(String(deviceId));
     sqliteDb.prepare(`UPDATE devices SET ${assign} WHERE device_id = ?`).run(...vals);
     return sqliteDb
-      .prepare(`SELECT device_id, name, created_at, latitude, longitude, location_source FROM devices WHERE device_id = ?`)
+      .prepare(`SELECT device_id, name, router_id, created_at, latitude, longitude, location_source FROM devices WHERE device_id = ?`)
       .get(String(deviceId));
   }
 }
@@ -739,6 +769,7 @@ module.exports = {
   getStats,
   getAllDevices,
   addDevice,
+  getDeviceCredentials,
   updateDevice,
   deleteDevice,
   verifyDeviceKey,

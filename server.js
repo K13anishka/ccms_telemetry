@@ -27,7 +27,9 @@ const app = express();
 
 // ────────────────────────── Middleware ──────────────────────────
 app.use(cors());
-app.use(express.json({ limit: "100kb" }));
+// type: () => true  -> parse the body as JSON whatever Content-Type the ESP32 sends
+// (esp_http_client does not always set application/json)
+app.use(express.json({ limit: "100kb", type: () => true }));
 
 // Serve the React production build from public/
 app.use(express.static(path.join(__dirname, "public")));
@@ -63,7 +65,12 @@ app.get("*", (_req, res) => {
 });
 
 // ────────────────────────── Error handler ──────────────────────────
-app.use((err, _req, res, _next) => {
+app.use((err, req, res, _next) => {
+  if (err.type === "entity.parse.failed") {
+    // typically firmware printing NaN / inf / trailing commas into the JSON
+    console.warn(`Bad JSON from ${req.ip} on ${req.path}: ${String(err.message).slice(0, 120)}`);
+    return res.status(400).json({ error: "invalid JSON body (NaN / inf / trailing comma?)" });
+  }
   console.error("Unhandled error:", err);
   res.status(500).json({ error: "internal server error" });
 });

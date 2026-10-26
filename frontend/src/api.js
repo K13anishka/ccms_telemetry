@@ -74,6 +74,10 @@ export function addDevice(device) {
   });
 }
 
+export function fetchDeviceConfig(id) {
+  return request(`${BASE}/devices/${id}/config`);
+}
+
 export function updateDevice(id, device) {
   return request(`${BASE}/devices/${id}`, {
     method: 'PUT',
