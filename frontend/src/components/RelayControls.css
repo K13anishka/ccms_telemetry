@@ -1,0 +1,8 @@
+.relay-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.relay-controls .btn {
+  flex: 1;
+}

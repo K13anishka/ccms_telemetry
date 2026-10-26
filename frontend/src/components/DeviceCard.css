@@ -1,0 +1,91 @@
+.device-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  border-left: 4px solid var(--border);
+  transition: box-shadow 0.2s;
+}
+
+.device-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.device-card--online {
+  border-left-color: var(--success);
+}
+
+.device-card--offline {
+  border-left-color: var(--danger);
+}
+
+.device-card--fault {
+  border-left-color: var(--warning);
+}
+
+.device-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.device-card-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.device-card-name:hover {
+  text-decoration: underline;
+}
+
+.device-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.device-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metric-label {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.metric-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.metric-small {
+  font-size: 0.82rem;
+}
+
+.device-card-fault {
+  background: #fff3e0;
+  color: var(--warning);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.device-card-footer {
+  margin-bottom: 12px;
+}
+
+.last-seen {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
