@@ -32,23 +32,24 @@ router.get("/", requireAuth, async (req, res, next) => {
 });
 
 // --------------- POST /api/v1/devices ---------------
-// Body: { device_id (15-digit IMEI), name?, router_id?, api_key? }
+// Body: { device_id (IMEI), name?, router_id?, kit_id?, api_key? }
 // If api_key is left out a random one is generated and returned once here
 // (and any time later via GET /:id/config for admins).
 router.post("/", adminAuth, async (req, res, next) => {
   try {
-    const device_id = String(req.body.device_id || "").trim();
-    const name = String(req.body.name || "").trim();
-    const router_id = String(req.body.router_id || "").trim();
+    const device_id = String(req.body.device_id || req.body.imei || "").trim();
+    const name = String(req.body.name || req.body.kit_id || "").trim();
+    const router_id = String(req.body.router_id || req.body.router_name || "").trim();
+    const kit_id = String(req.body.kit_id || (name && name.startsWith("KIT_") ? name : "")).trim();
     const api_key = String(req.body.api_key || "").trim() || crypto.randomBytes(12).toString("hex");
 
-    if (!/^\d{15}$/.test(device_id)) {
-      return res.status(400).json({ error: "IMEI must be exactly 15 digits" });
+    if (!device_id || device_id.length < 3 || device_id.length > 32) {
+      return res.status(400).json({ error: "IMEI must be between 3 and 32 characters" });
     }
     if (router_id.length > 64 || name.length > 80 || api_key.length > 64) {
       return res.status(400).json({ error: "name / router / key is too long" });
     }
-    const device = await addDevice(device_id, name, api_key, router_id);
+    const device = await addDevice(device_id, name, api_key, router_id, kit_id);
     res.status(201).json({ ...device, api_key });
   } catch (err) {
     if (err.code === "23505" || err.message?.includes("UNIQUE constraint failed")) {

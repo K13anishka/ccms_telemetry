@@ -61,7 +61,7 @@ export default function Devices({ onToast, isAdmin }) {
 
   const setField = (k) => (e) => {
     let v = e.target.value;
-    if (k === 'device_id') v = v.replace(/\D/g, '').slice(0, 15);
+    if (k === 'device_id') v = v.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 32);
     setForm((f) => ({ ...f, [k]: v }));
   };
 
@@ -73,22 +73,22 @@ export default function Devices({ onToast, isAdmin }) {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    if (!/^\d{15}$/.test(form.device_id)) {
-      setFormError('IMEI must be exactly 15 digits.');
+    if (!form.device_id || form.device_id.trim().length < 3) {
+      setFormError('IMEI must be at least 3 characters.');
       return;
     }
     setSaving(true);
     setFormError('');
     try {
       const created = await addDevice({
-        device_id: form.device_id,
+        device_id: form.device_id.trim(),
         name: form.name.trim(),
         router_id: form.router_id.trim(),
         api_key: form.api_key.trim(),
       });
       setShowForm(false);
       setCreds(created);
-      toast(`Device ${created.device_id} added`, '✅');
+      toast(`Kit / Device ${created.device_id} added`, '✅');
       load();
     } catch (err) {
       setFormError(err.message);

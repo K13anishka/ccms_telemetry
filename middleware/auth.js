@@ -94,7 +94,7 @@ function requireAuth(req, res, next) {
  */
 async function deviceAuth(req, res, next) {
   try {
-    const id = req.params.id || (req.body && req.body.device_id);
+    const id = req.params.id || (req.body && (req.body.device_id || req.body.imei || req.body.kit_id));
     const key = req.header("x-api-key");
 
     if (!id || !key) {

@@ -18,6 +18,7 @@ const { initDb, checkHealth, closeDb } = require("./db");
 const telemetryRoutes = require("./routes/telemetry");
 const dashboardRoutes = require("./routes/dashboard");
 const devicesRoutes = require("./routes/devices");
+const kitsRoutes = require("./routes/kits");
 const authRoutes = require("./routes/auth");
 const { startScheduler, stopScheduler } = require("./lib/scheduler");
 
@@ -56,6 +57,10 @@ app.use("/api/v1", dashboardRoutes);
 
 // Device management (CRUD)
 app.use("/api/v1/devices", devicesRoutes);
+
+// Kit management & multi-device monitoring (/api/kits and /api/v1/kits)
+app.use("/api/kits", kitsRoutes);
+app.use("/api/v1/kits", kitsRoutes);
 
 // ────────────────────────── SPA fallback ──────────────────────────
 // Any route that doesn't match an API or static file serves index.html

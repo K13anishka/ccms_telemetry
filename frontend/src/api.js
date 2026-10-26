@@ -49,6 +49,22 @@ export function fetchMe() {
   return request(`${BASE}/auth/me`);
 }
 
+/* ── Kits (Multi-Kit CCMS) ── */
+export function fetchKits() {
+  return request('/api/kits');
+}
+
+export function fetchKit(id) {
+  return request(`/api/kits/${encodeURIComponent(id)}`);
+}
+
+export function addKit(kit) {
+  return request('/api/kits', {
+    method: 'POST',
+    body: JSON.stringify(kit),
+  });
+}
+
 /* ── Dashboard / Telemetry ── */
 export function fetchMeterData() {
   return request(`${BASE}/meter`);

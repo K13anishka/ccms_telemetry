@@ -1,0 +1,96 @@
+menu "CCMS Street-Light Kit Configuration"
+
+    config CCMS_KIT_ID
+        string "Kit Identifier (e.g. KIT_001)"
+        default "KIT_001"
+        help
+            Unique identity label for this physical street-light kit.
+
+    config CCMS_IMEI
+        string "Kit IMEI / Hardware Identifier"
+        default "123456789012345"
+        help
+            Unique hardware identifier for the ESP32 / controller node.
+
+    config CCMS_ROUTER_NAME
+        string "Wi-Fi Router Name / ID"
+        default "CCMS_ROUTER_001"
+        help
+            Label of the Wi-Fi router / gateway this kit communicates through.
+
+    config CCMS_AWS_SERVER_URL
+        string "AWS Telemetry Endpoint URL"
+        default "http://localhost:8000/api/v1/save"
+        help
+            Complete HTTP POST URL for telemetry ingestion on the AWS backend.
+
+    config CCMS_API_KEY
+        string "Device API Key (x-api-key)"
+        default "secret123"
+        help
+            Secret API key matching the database registration for this kit.
+
+    config CCMS_WIFI_SSID
+        string "Wi-Fi SSID"
+        default "CCMS_ROUTER_001"
+        help
+            SSID of the Wi-Fi network.
+
+    config CCMS_WIFI_PASSWORD
+        string "Wi-Fi Password"
+        default ""
+        help
+            Password for the Wi-Fi network.
+
+    config CCMS_TELEMETRY_INTERVAL_SEC
+        int "Telemetry Reporting Interval (seconds)"
+        default 10
+        range 2 3600
+        help
+            How often the ESP32 pushes meter readings and GPS to the AWS server.
+
+    menu "Hardware Pinout Configuration"
+
+        config CCMS_MODBUS_UART_NUM
+            int "Modbus RS485 UART Port (0, 1, 2)"
+            default 2
+            range 0 2
+
+        config CCMS_MODBUS_TX_PIN
+            int "Modbus TX GPIO Pin"
+            default 17
+
+        config CCMS_MODBUS_RX_PIN
+            int "Modbus RX GPIO Pin"
+            default 16
+
+        config CCMS_MODBUS_BAUD_RATE
+            int "Modbus Baud Rate"
+            default 9600
+
+        config CCMS_GPS_UART_NUM
+            int "GPS UART Port (0, 1, 2)"
+            default 1
+            range 0 2
+
+        config CCMS_GPS_TX_PIN
+            int "GPS TX GPIO Pin"
+            default 18
+
+        config CCMS_GPS_RX_PIN
+            int "GPS RX GPIO Pin"
+            default 5
+
+        config CCMS_GPS_BAUD_RATE
+            int "GPS Baud Rate"
+            default 9600
+
+        config CCMS_RELAY_GPIO
+            int "Street-Light Relay Control GPIO Pin"
+            default 2
+            help
+                GPIO connected to the contactor / solid-state relay.
+
+    endmenu
+
+endmenu
