@@ -91,12 +91,19 @@ function cleanTelemetry(body) {
 const truthy = (v) => v === true || v === 1 || ["1", "true", "yes", "on"].includes(String(v).trim().toLowerCase());
 
 // --------------- POST /api/v1/save ---------------
+<<<<<<< HEAD
 const saveTelemetry = async (req, res, next) => {
   try {
     const clean = cleanTelemetry(req.body);
     const idHint = clean.device_id || clean.imei || clean.kit_id;
     if (!idHint) return res.status(400).json({ error: "device_id/imei/kit_id is required" });
 
+=======
+router.post("/save", deviceAuth, async (req, res, next) => {
+  try {
+    const clean = cleanTelemetry(req.body);
+    const idHint = clean.device_id || clean.imei || clean.kit_id;
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
     const device = await findDevice(idHint);
     const targetId = device ? device.device_id : String(idHint);
 
@@ -105,6 +112,7 @@ const saveTelemetry = async (req, res, next) => {
     if (device && device.router_id && !clean.router_name) clean.router_name = device.router_id;
 
     await saveReading(targetId, clean);
+<<<<<<< HEAD
 
     // Persist a stable GPS site location, but never let location handling
     // prevent telemetry from being acknowledged.
@@ -112,15 +120,25 @@ const saveTelemetry = async (req, res, next) => {
       console.warn("location capture failed:", e.message)
     );
 
+=======
+    // keep one stable GPS location per device (never blocks or fails the save)
+    await captureLocation(targetId, clean).catch((e) =>
+      console.warn("location capture failed:", e.message)
+    );
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
     res.json({ ok: true });
   } catch (err) {
     next(err);
   }
+<<<<<<< HEAD
 };
 
 // Accept both endpoint names so older flashed ESP32 firmware keeps working.
 router.post("/save", deviceAuth, saveTelemetry);
 router.post("/telemetry", deviceAuth, saveTelemetry);
+=======
+});
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
 
 // --------------- POST /api/v1/event ---------------
 router.post("/event", deviceAuth, async (req, res, next) => {

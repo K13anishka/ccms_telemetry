@@ -195,6 +195,7 @@ export default function Dashboard({ onToast }) {
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Live data connection */}
       <div className="live-strip">
         <div className="live-strip-left">
@@ -204,6 +205,8 @@ export default function Dashboard({ onToast }) {
         <span>Last dashboard refresh: <strong>{refreshTime}</strong></span>
       </div>
 
+=======
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
       {/* Aggregate Stats Cards */}
       <div className="stats-row">
         <div className="stat-card">
@@ -409,6 +412,7 @@ export default function Dashboard({ onToast }) {
                     </div>
                   </div>
 
+<<<<<<< HEAD
                   {/* Live GPS + last-seen */}
                   <div className="kit-location">
                     <div className="location-main">
@@ -437,6 +441,24 @@ export default function Dashboard({ onToast }) {
                         <a href={gUrl} target="_blank" rel="noopener noreferrer">Open location ↗</a>
                       </div>
                     )}
+=======
+                  {/* Footer: GPS & Last Seen */}
+                  <div className="kit-footer-info">
+                    <div className="footer-info-row">
+                      <span>GPS:</span>
+                      {hasGps ? (
+                        <a href={gUrl} target="_blank" rel="noopener noreferrer">
+                          📍 {formatCoords({ latitude: lat, longitude: lon })}
+                        </a>
+                      ) : (
+                        <span>Acquiring fix...</span>
+                      )}
+                    </div>
+                    <div className="footer-info-row">
+                      <span>Last update:</span>
+                      <span>{formatSeen(kit.last_seen || kit.received_at)}</span>
+                    </div>
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
                   </div>
 
                   <Link to={`/device/${imei}`} className="btn-view-kit">

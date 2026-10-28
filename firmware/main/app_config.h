@@ -14,25 +14,41 @@
 #ifdef CONFIG_CCMS_KIT_ID
 #define KIT_ID CONFIG_CCMS_KIT_ID
 #else
+<<<<<<< HEAD
 #define KIT_ID "1"
+=======
+#define KIT_ID "KIT_001"
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
 #endif
 
 #ifdef CONFIG_CCMS_IMEI
 #define IMEI CONFIG_CCMS_IMEI
 #else
+<<<<<<< HEAD
 #define IMEI "355354200837906"
+=======
+#define IMEI "123456789012345"
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
 #endif
 
 #ifdef CONFIG_CCMS_ROUTER_NAME
 #define ROUTER_NAME CONFIG_CCMS_ROUTER_NAME
 #else
+<<<<<<< HEAD
 #define ROUTER_NAME "COFE_4376"
+=======
+#define ROUTER_NAME "CCMS_ROUTER_001"
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
 #endif
 
 #ifdef CONFIG_CCMS_AWS_SERVER_URL
 #define AWS_SERVER_URL CONFIG_CCMS_AWS_SERVER_URL
 #else
+<<<<<<< HEAD
 #define AWS_SERVER_URL "http://16.171.175.118:8000/api/v1/save"
+=======
+#define AWS_SERVER_URL "http://localhost:8000/api/v1/save"
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
 #endif
 
 #ifdef CONFIG_CCMS_API_KEY
@@ -44,13 +60,21 @@
 #ifdef CONFIG_CCMS_WIFI_SSID
 #define WIFI_SSID CONFIG_CCMS_WIFI_SSID
 #else
+<<<<<<< HEAD
 #define WIFI_SSID "COFE_4376"
+=======
+#define WIFI_SSID "CCMS_ROUTER_001"
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
 #endif
 
 #ifdef CONFIG_CCMS_WIFI_PASSWORD
 #define WIFI_PASSWORD CONFIG_CCMS_WIFI_PASSWORD
 #else
+<<<<<<< HEAD
 #define WIFI_PASSWORD "18001723"
+=======
+#define WIFI_PASSWORD ""
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
 #endif
 
 #ifdef CONFIG_CCMS_TELEMETRY_INTERVAL_SEC

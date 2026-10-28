@@ -116,7 +116,11 @@ async function initDb() {
         `INSERT INTO devices (device_id, name, api_key)
          VALUES ($1, $2, $3)
          ON CONFLICT (device_id) DO NOTHING`,
+<<<<<<< HEAD
         ["355354200837906", "KIT_001 (Feeder 1)", "secret123"]
+=======
+        ["355354200856237", "CMS-6237 (Feeder 1)", "secret123"]
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
       );
       await client.query("COMMIT");
       console.log("PostgreSQL schema initialized.");
@@ -262,6 +266,7 @@ async function getAndClearCommands(deviceId) {
  * Stored GPS location for a device row. Falls back to whatever lat/long the
  * ESP32 last reported in telemetry (latt / long) when nothing is stored yet.
  */
+<<<<<<< HEAD
 function locationFields(r, data = {}) {
   const storedValid =
     r.latitude !== null && r.latitude !== undefined &&
@@ -291,6 +296,14 @@ function locationFields(r, data = {}) {
     location_source: hasCoords ? (storedValid ? (r.location_source || "gps") : "gps_live") : null,
     gps_fix_valid: hasCoords,
     gps_satellites: Number.isFinite(Number(data.satellites)) ? Number(data.satellites) : null,
+=======
+function locationFields(r) {
+  const hasStored = r.latitude !== null && r.latitude !== undefined && r.longitude !== null && r.longitude !== undefined;
+  return {
+    latitude: hasStored ? Number(r.latitude) : null,
+    longitude: hasStored ? Number(r.longitude) : null,
+    location_source: hasStored ? r.location_source || "gps" : null,
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
   };
 }
 
@@ -325,7 +338,11 @@ async function getMeterReadings() {
         online,
         status: online ? "ONLINE" : (r.received_at ? "OFFLINE" : "WAITING"),
         ...data,
+<<<<<<< HEAD
         ...locationFields(r, data),
+=======
+        ...locationFields(r),
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
       };
     });
   } else {
@@ -356,7 +373,11 @@ async function getMeterReadings() {
         online,
         status: online ? "ONLINE" : (r.received_at ? "OFFLINE" : "WAITING"),
         ...data,
+<<<<<<< HEAD
         ...locationFields(r, data),
+=======
+        ...locationFields(r),
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
       };
     });
   }
@@ -532,7 +553,11 @@ async function getAllDevices() {
         online,
         status: online ? "ONLINE" : (r.last_seen ? "OFFLINE" : "WAITING"),
         ...data,
+<<<<<<< HEAD
         ...locationFields(r, data),
+=======
+        ...locationFields(r),
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
       };
     });
   } else {
@@ -564,7 +589,11 @@ async function getAllDevices() {
         online,
         status: online ? "ONLINE" : (r.last_seen ? "OFFLINE" : "WAITING"),
         ...parsed,
+<<<<<<< HEAD
         ...locationFields(r, data),
+=======
+        ...locationFields(r),
+>>>>>>> da4dcdbf2f3d15d493e69e4562eb6d345ad59a9a
       };
     });
   }
